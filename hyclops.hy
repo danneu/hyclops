@@ -395,17 +395,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn comp [&rest funcs]
-  (fn [&rest args]
-    (let [[reordered-funcs (list (reverse funcs))]
-          [first-apply (apply (first reordered-funcs) args)]]
-      (if (empty? (rest reordered-funcs))
-        first-apply
-        (reduce (fn [result func] (func result))
-                (rest reordered-funcs)
-                first-apply)))))
+  (if (empty? funcs)
+    identity
+    (fn [&rest args]
+      (let [[reordered-funcs (list (reverse funcs))]
+            [first-apply (apply (first reordered-funcs) args)]]
+        (if (empty? (rest reordered-funcs))
+          first-apply
+          (reduce (fn [result func] (func result))
+                  (rest reordered-funcs)
+                  first-apply))))))
 
 (assert (= "3" ((comp str inc inc) 1)))
 (assert (= 1 ((comp identity identity identity) 1)))
+(assert (= 1 ((comp) 1)))
 
 (let [[add (fn [a b] (plus a b))]]
   (assert (= 3 ((comp identity add) 1 2))))
